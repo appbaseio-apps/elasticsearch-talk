@@ -12,6 +12,7 @@
       <h2> Bulk Insertion of Tweets</h2><br>
       <div class="row">
         <div class="col-md-12" id="info-text">
+            Adding the data into Appbase....
         </div>
       </div>
     </div>
@@ -19,9 +20,11 @@
   <script type="text/javascript">
 
       $(document).ready(function(){ 
+        
         var $infoTextContainer = $('#info-text')
         var $jsonObject
 
+        // Reading the data from data.json file and storing in jsonObject
         $.ajax({
             type: 'GET',
             url: 'js/data.json',
@@ -32,21 +35,19 @@
           jsonObject = data
         })
 
+        // Connecting to elasticsearch
         var client = new $.es.Client({
           hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
 
-        // Find number of document of "finaljson"
-        var xloop = jsonObject.length;
 
         // Declare variable to contain body of JSON data for loading to ElasticSearch
-        var br = [];
+        var request_body = [];
 
         // Function to create body for loading to ElasticSearch
         function create_bulk (bulk_request) {
           var obj
-
-          for (i = 0; i < xloop; i++) {
+          for (i = 0; i < jsonObject.length; i++) {
             obj = jsonObject[i]
             // Insert header of record
             bulk_request.push({index: {_index: config.app_name, _type: 'tweets', _id: i+1}});
@@ -56,16 +57,17 @@
         };
           
         // Call function to get body for loading
-        create_bulk(br); 
+        create_bulk(request_body); 
 
         // Standard function of ElasticSearch to use bulk command
         client.bulk(
         {
-          body : br,
+          body : request_body,
           index: config.app_name,
           type: "tweets"
         }, function (err, resp) {
-          console.log(resp);
+          $infoTextContainer.html("The data has been inserted successfully!")
+          console.log(err);
         });
       });
   </script>
