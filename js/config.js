@@ -1,5 +1,5 @@
 const config = {
-	"app_name": "demo-app",
-	"username": "qPPE8FBuJ",
-	"password": "66f9bfc6-f8e7-490c-a317-75b8ca9f8f48"
+	"app_name": "App3",
+	"username": "CnqEgei0f",
+	"password": "a2176969-de4c-4ed0-bbbe-67e152de04f7"
 }

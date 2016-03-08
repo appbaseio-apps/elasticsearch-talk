@@ -106,7 +106,7 @@
                 }, function() {
                     client.indices.putMapping({
                         index: config.app_name,
-                        type: 'analzed_type',
+                        type: 'analyzed_tweets',
                         body: mapping_json
                     });
                 })

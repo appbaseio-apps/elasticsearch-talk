@@ -21,7 +21,6 @@
                         <div class="form-group">
                             <input type="text" class="form-control" id="search-input" placeholder="Search name...">
                         </div>
-                        <a href="javascript:void(0);" class="btn btn-success" id="submit">Submit</a>
                     </form>
                 </div>
             </div>
@@ -45,8 +44,13 @@
             hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
 
+        // Dom binding
+        var $searchInput = $('#search-input');
+        var $resultContainer = $('#search-results-container');
+        var $searchStatsContainer = $('#search-stats-container');
+
         //On submit
-        $('#submit').on('click', function() {
+        $searchInput.on('keyup change', function() {
             var searchText = $('#search-input').val();
             var bodyQuery = {
                 query: {
@@ -68,11 +72,7 @@
             });
         });
 
-        // Dom binding
-        var $searchInput = $('#search-input');
-        var $resultContainer = $('#search-results-container');
-        var $searchStatsContainer = $('#search-stats-container');
-
+        
         function displayResults(content) {
             var html = ''
             if (content.hits.total > 0) {

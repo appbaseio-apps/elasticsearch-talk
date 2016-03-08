@@ -50,56 +50,56 @@
 
         //On submit
         // 1. Match
-        $searchInput.on('keyup change', function(event) {
-            var searchText = $('#search-input').val();
-            var bodyQuery = {
-                query: {
-                    match: {
-                        //'name' : searchText
-                        'tweet': searchText
-                    }
+        // $searchInput.on('keyup change', function(event) {
+        //     var searchText = $('#search-input').val();
+        //     var bodyQuery = {
+        //         query: {
+        //             match: {
+        //                 //'name' : searchText
+        //                 'tweet': searchText
+        //             }
 
-                    //Match phrase 
-                    // match_phrase: {
-                    //   'name' : searchText
-                    //   //'tweet' : searchText
-                    // }
-                }
-            };
+        //             //Match phrase 
+        //             // match_phrase: {
+        //             //   'name' : searchText
+        //             //   //'tweet' : searchText
+        //             // }
+        //         }
+        //     };
 
-            client.search({
-                index: config.app_name,
-                type: 'tweets',
-                body: bodyQuery
-            }, function(error, response) {
-                console.log(response);
-                displayResults(response);
-                displaySearchStats(response);
-            });
-        });
+        //     client.search({
+        //         index: config.app_name,
+        //         type: 'tweets',
+        //         body: bodyQuery
+        //     }, function(error, response) {
+        //         console.log(response);
+        //         displayResults(response);
+        //         displaySearchStats(response);
+        //     });
+        // });
 
         // 2. Multi Match
-        // $searchInput.on('keyup change', function(event) {
-        //    var searchText = $('#search-input').val();
-        //    var bodyQuery = {
-        //      query: {
-        //        multi_match: {
-        //          query: searchText,
-        //          fields: ['tweet', 'name']
-        //        }
-        //      }
-        //    };
+        $searchInput.on('keyup change', function(event) {
+           var searchText = $('#search-input').val();
+           var bodyQuery = {
+             query: {
+               multi_match: {
+                 query: searchText,
+                 fields: ['tweet', 'name']
+               }
+             }
+           };
 
-        //    client.search({
-        //      index: config.app_name,
-        //      type: 'tweets',
-        //      body: bodyQuery
-        //      }, function (error, response) {
-        //        console.log(response);
-        //        displayResults(response);
-        //        displaySearchStats(response);
-        //    });
-        // });
+           client.search({
+             index: config.app_name,
+             type: 'tweets',
+             body: bodyQuery
+             }, function (error, response) {
+               console.log(response);
+               displayResults(response);
+               displaySearchStats(response);
+           });
+        });
 
         function displayResults(content) {
             var html = ''
