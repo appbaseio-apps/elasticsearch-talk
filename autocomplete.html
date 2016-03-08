@@ -1,0 +1,124 @@
+<html>
+<head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
+  <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
+  <script src="js/config.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container-fluid">
+      <h2> Autocomplete with match/multi_match</h2><br>
+      <div class="row">
+        <div class="col-md-12">
+          <form>
+            <div class="form-group">
+              <input type="text" class="form-control" id="search-input" placeholder="Search name...">
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="search-stats-container">
+            <!-- Search Stats injected here -->
+          </div>
+          <div id="search-results-container" class="col-xs-12">
+            <!-- Search Results injected here -->
+            <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+      
+      $(document).ready(function(){ 
+
+        var client = new $.es.Client({
+          hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
+        })
+
+      // Dom binding
+      var $searchInput = $('#search-input');
+      var $resultContainer = $('#search-results-container');
+      var $searchStatsContainer = $('#search-stats-container');
+
+
+       //On submit
+       // 1. Match
+       $searchInput.on('keyup change', function(event) {
+          var searchText = $('#search-input').val();
+          var bodyQuery = {
+            query: {
+              match: {
+                //'name' : searchText
+                'tweet' : searchText
+              }
+
+              //Match phrase 
+              // match_phrase: {
+              //   'name' : searchText
+              //   //'tweet' : searchText
+              // }
+            }
+          };
+
+          client.search({
+            index: config.app_name,
+            type: 'tweets',
+            body: bodyQuery
+            }, function (error, response) {
+              console.log(response);
+              displayResults(response);
+              displaySearchStats(response);
+          });
+       });
+
+       // 2. Multi Match
+       // $searchInput.on('keyup change', function(event) {
+       //    var searchText = $('#search-input').val();
+       //    var bodyQuery = {
+       //      query: {
+       //        multi_match: {
+       //          query: searchText,
+       //          fields: ['tweet', 'name']
+       //        }
+       //      }
+       //    };
+
+       //    client.search({
+       //      index: config.app_name,
+       //      type: 'tweets',
+       //      body: bodyQuery
+       //      }, function (error, response) {
+       //        console.log(response);
+       //        displayResults(response);
+       //        displaySearchStats(response);
+       //    });
+       // });
+
+        function displayResults(content) {
+          var html = ''
+          if (content.hits.total > 0) {
+            jQuery.map(content.hits.hits, function(hit) {
+              html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>'+
+                      '<span class="pull-right">'+ hit._source.age + '</span>'+
+                      '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
+            });
+          }
+          else {
+            html = 'No results found';
+          }
+          $resultContainer.html(html);
+        }
+
+        function displaySearchStats(content) {
+          var html = content.hits.total + ' articles <small>founds in <strong>' + content.took / 1000 + ' seconds</strong>';
+          $searchStatsContainer.html(html);
+        }
+      });
+  </script>
+</body>
+</html>
