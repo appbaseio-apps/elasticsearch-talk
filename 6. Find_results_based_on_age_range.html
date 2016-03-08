@@ -1,136 +1,139 @@
 <html>
+
 <head>
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
-  <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
-  <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
-  <script src="js/config.js"></script>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
+    <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
+    <script src="js/config.js"></script>
 </head>
+
 <body>
-  <div class="wrapper">
-    <div class="container-fluid">
-      <h2> Range query </h2><br>
-      <p></p><br>
-      <div class="row">
-        <div class="col-md-12">
-          <form>
-            <div class="form-group col-xs-6 pl-0">
-              <input type="text" class="form-control" id="min" placeholder="Minimum age">
+    <div class="wrapper">
+        <div class="container-fluid">
+            <h2> Range query </h2>
+            <br>
+            <p></p>
+            <br>
+            <div class="row">
+                <div class="col-md-12">
+                    <form>
+                        <div class="form-group col-xs-6 pl-0">
+                            <input type="text" class="form-control" id="min" placeholder="Minimum age">
+                        </div>
+                        <div class="form-group col-xs-6 pr-0">
+                            <input type="text" class="form-control" id="max" placeholder="Maximum age">
+                        </div>
+                        <a href="javascript:void(0);" class="btn btn-success" id="submit">Submit</a>
+                    </form>
+                </div>
             </div>
-            <div class="form-group col-xs-6 pr-0">
-              <input type="text" class="form-control" id="max" placeholder="Maximum age">
+            <div class="row">
+                <div class="col-md-12">
+                    <div id="search-stats-container">
+                        <!-- Search Stats injected here -->
+                    </div>
+                    <div id="search-results-container" class="col-xs-12">
+                        <!-- Search Results injected here -->
+                        <p class="bg-warning">Hint: Search for terms like <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
+                    </div>
+                </div>
             </div>
-            <a href="javascript:void(0);" class="btn btn-success" id="submit">Submit</a>
-          </form>
         </div>
-      </div>
-      <div class="row">
-        <div class="col-md-12">
-          <div id="search-stats-container">
-            <!-- Search Stats injected here -->
-          </div>
-          <div id="search-results-container" class="col-xs-12">
-            <!-- Search Results injected here -->
-            <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-  <script type="text/javascript">
-      
-      $(document).ready(function(){ 
+    <script type="text/javascript">
+    $(document).ready(function() {
 
         var client = new $.es.Client({
-          hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
+            hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
 
-       //On submit
-       $('#submit').on('click', function(){
-          var min = $('#min').val();
-          var max = $('#max').val();
-          var searchQuery;
+        //On submit
+        $('#submit').on('click', function() {
+            var min = $('#min').val();
+            var max = $('#max').val();
+            var searchQuery;
 
-          //1. for min and max
-          if(min != '' && max != '') { 
-            searchQuery = {
-              "range": {
-                "age": {
-                  "from": min,
-                  "to": max
+            //1. for min and max
+            if (min != '' && max != '') {
+                searchQuery = {
+                    "range": {
+                        "age": {
+                            "from": min,
+                            "to": max
+                        }
+                    }
                 }
-              }
             }
-          }
 
 
-          //2. for min only - apply greater than
-          else if(min != '' && max == '') { 
-            searchQuery = {
-              "range": {
-                "age": {
-                  // - Greater than equal to
-                  "gte": min
-                  // Greater than
-                  //"gt": min
+            //2. for min only - apply greater than
+            else if (min != '' && max == '') {
+                searchQuery = {
+                    "range": {
+                        "age": {
+                            // - Greater than equal to
+                            "gte": min
+                                // Greater than
+                                //"gt": min
+                        }
+                    }
+                };
+            }
+
+
+            //3. for max only - apply less than
+            if (min == '' && max != '') {
+                searchQuery = {
+                    "range": {
+                        "age": {
+                            // - Less than equal to
+                            "lte": max
+                                // Less than
+                                //"lt": min
+                        }
+                    }
+                };
+            }
+
+            client.search({
+                index: config.app_name,
+                type: 'tweets',
+                body: {
+                    query: searchQuery
                 }
-              }
-            };
-          }
-
-
-          //3. for max only - apply less than
-          if(min == '' && max != '') { 
-            searchQuery = {
-              "range": {
-                "age": {
-                  // - Less than equal to
-                  "lte": max
-                  // Less than
-                  //"lt": min
-                }
-              }
-            };
-          }
-          
-          client.search({
-            index: config.app_name,
-            type: 'tweets',
-            body: {
-              query: searchQuery
-              }
-            }, function (error, response) {
-              console.log(response);
-              displayResults(response);
-              displaySearchStats(response);
-          });
-       });
+            }, function(error, response) {
+                console.log(response);
+                displayResults(response);
+                displaySearchStats(response);
+            });
+        });
 
         // Dom binding
         var $searchInput = $('#search-input');
         var $resultContainer = $('#search-results-container');
         var $searchStatsContainer = $('#search-stats-container');
-        
+
         function displayResults(content) {
-          var html = ''
-          if (content.hits.total > 0) {
-            jQuery.map(content.hits.hits, function(hit) {
-              html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>'+
-                      '<span class="pull-right">'+ hit._source.age + '</span>'+
-                      '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
-            });
-          }
-          else {
-            html = 'No results found';
-          }
-          $resultContainer.html(html);
+            var html = ''
+            if (content.hits.total > 0) {
+                jQuery.map(content.hits.hits, function(hit) {
+                    html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>' +
+                        '<span class="pull-right">' + hit._source.age + '</span>' +
+                        '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
+                });
+            } else {
+                html = 'No results found';
+            }
+            $resultContainer.html(html);
         }
 
         function displaySearchStats(content) {
-          var html = content.hits.total + ' articles <small>founds in <strong>' + content.took / 1000 + ' seconds</strong>';
-          $searchStatsContainer.html(html);
+            var html = content.hits.total + ' articles <small>founds in <strong>' + content.took / 1000 + ' seconds</strong>';
+            $searchStatsContainer.html(html);
         }
-      });
-  </script>
+    });
+    </script>
 </body>
+
 </html>

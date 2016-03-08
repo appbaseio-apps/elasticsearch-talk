@@ -1,82 +1,84 @@
 <html>
-<head>
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/style.css">
-  <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
-  <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
-  <script src="js/config.js"></script>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container-fluid">
-      <h2> Update settings and Bulk insertion</h2><br>
-      <div class="row">
-        <div class="col-md-12" id="info-text">
-            Adding the data into Appbase....
-        </div>
-      </div>
-    </div>
-  </div>
-  <script type="text/javascript">
 
-      $(document).ready(function(){ 
-        
+<head>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
+    <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
+    <script src="js/config.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="container-fluid">
+            <h2> Update settings and Bulk insertion</h2>
+            <br>
+            <div class="row">
+                <div class="col-md-12" id="info-text">
+                    Adding the data into Appbase....
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    $(document).ready(function() {
+
         var $infoTextContainer = $('#info-text')
 
         // Connecting to elasticsearch
         var client = new $.es.Client({
-          hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
+            hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
 
         var settings_json = {
-          "analysis": {
-            "filter": {
-              "nGram_filter": {
-                "type": "edgeNGram",
-                "min_gram": 1,
-                "max_gram": 20,
-                "token_chars": [
-                  "letter",
-                  "digit",
-                  "punctuation",
-                  "symbol"
-                ]
-              }
-            },
-            "analyzer": {
-              "nGram_analyzer": {
-                "type": "custom",
-                "tokenizer": "whitespace",
-                "filter": [
-                  "lowercase",
-                  "asciifolding",
-                  "nGram_filter"
-                ]
-              },
-              "whitespace_analyzer": {
-                "type": "whitespace",
-                "tokenizer": "whitespace",
-                "filter": [
-                  "lowercase",
-                  "asciifolding"
-                ]
-              }
+            "analysis": {
+                "filter": {
+                    "nGram_filter": {
+                        "type": "edgeNGram",
+                        "min_gram": 1,
+                        "max_gram": 20,
+                        "token_chars": [
+                            "letter",
+                            "digit",
+                            "punctuation",
+                            "symbol"
+                        ]
+                    }
+                },
+                "analyzer": {
+                    "nGram_analyzer": {
+                        "type": "custom",
+                        "tokenizer": "whitespace",
+                        "filter": [
+                            "lowercase",
+                            "asciifolding",
+                            "nGram_filter"
+                        ]
+                    },
+                    "whitespace_analyzer": {
+                        "type": "whitespace",
+                        "tokenizer": "whitespace",
+                        "filter": [
+                            "lowercase",
+                            "asciifolding"
+                        ]
+                    }
+                }
             }
-          }
         };
         var mapping_json = {
-          "properties": {
-            "name": {
-              "type": "string",
-              "analyzer": "nGram_analyzer",
-              "search_analyzer": "whitespace_analyzer"
-            },
-            "tweet": {
-              "type": "string",
-              "analyzer": "nGram_analyzer",
-              "search_analyzer": "whitespace_analyzer"
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "analyzer": "nGram_analyzer",
+                    "search_analyzer": "whitespace_analyzer"
+                },
+                "tweet": {
+                    "type": "string",
+                    "analyzer": "nGram_analyzer",
+                    "search_analyzer": "whitespace_analyzer"
+                }
             }
-          }
         }
         var $jsonObject
 
@@ -86,60 +88,66 @@
             url: 'js/data.json',
             dataType: 'json',
             async: false
-        }).done(function(data){
-          console.log(data)
-          jsonObject = data
+        }).done(function(data) {
+            console.log(data)
+            jsonObject = data
         })
 
         // Updating the settings and mapping
         client.indices.close({
-          index: config.app_name
-        }, function(){
-          client.indices.putSettings({
-            index: config.app_name,
-            body: settings_json
-          }, function(){
-            client.indices.open({
-              index: config.app_name
-            }, function(){
-              client.indices.putMapping({
+            index: config.app_name
+        }, function() {
+            client.indices.putSettings({
                 index: config.app_name,
-                type: 'analzed_type',
-                body: mapping_json
-              });
-            })
-          });          
+                body: settings_json
+            }, function() {
+                client.indices.open({
+                    index: config.app_name
+                }, function() {
+                    client.indices.putMapping({
+                        index: config.app_name,
+                        type: 'analzed_type',
+                        body: mapping_json
+                    });
+                })
+            });
         })
 
         // Declare variable to contain body of JSON data for loading to ElasticSearch
         var request_body = [];
 
         // Function to create body for loading to ElasticSearch
-        function create_bulk (bulk_request) {
-          var obj
-          for (i = 0; i < jsonObject.length; i++) {
-            obj = jsonObject[i]
-            // Insert header of record
-            bulk_request.push({index: {_index: config.app_name, _type: 'analyzed_tweets', _id: i+1}});
-            bulk_request.push(obj);    
-          }
-          return bulk_request;
+        function create_bulk(bulk_request) {
+            var obj
+            for (i = 0; i < jsonObject.length; i++) {
+                obj = jsonObject[i]
+                    // Insert header of record
+                bulk_request.push({
+                    index: {
+                        _index: config.app_name,
+                        _type: 'analyzed_tweets',
+                        _id: i + 1
+                    }
+                });
+                bulk_request.push(obj);
+            }
+            return bulk_request;
         };
-          
+
         // Call function to get body for loading
-        create_bulk(request_body); 
+        create_bulk(request_body);
 
         // Standard function of ElasticSearch to use bulk command
-        client.bulk(
-        {
-          body : request_body,
-          index: config.app_name,
-          type: "analyzed_tweets"
-        }, function (err, resp) {
-          $infoTextContainer.html("The data has been inserted successfully!")
-          console.log(err);
+        client.bulk({
+            body: request_body,
+            index: config.app_name,
+            type: "analyzed_tweets"
+        }, function(err, resp) {
+            $infoTextContainer.html("The data has been inserted successfully!")
+            console.log(err);
         });
-      });
-  </script>
+    });
+    </script>
 </body>
+
 </html>
