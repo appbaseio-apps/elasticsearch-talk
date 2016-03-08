@@ -1,0 +1,137 @@
+<html>
+<head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
+  <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container-fluid">
+      <h2> Match all query </h2><br>
+      <div class="row">
+        <div class="col-md-12">
+          <form>
+            <div class="form-group">
+              <input type="text" class="form-control" id="search-input" placeholder="Search tweets...">
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div id="search-stats-container">
+            <!-- Search Stats injected here -->
+          </div>
+          <div id="search-results-container">
+            <!-- Search Results injected here -->
+            <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+      
+      $(document).ready(function(){ 
+        var $jsonObject
+
+        $.ajax({
+            type: 'GET',
+            url: 'data.json',
+            dataType: 'json',
+            async: false
+        }).done(function(data){
+          console.log(data)
+          jsonObject = data
+        })
+
+        var client = new $.es.Client({
+          hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
+        })
+
+        // Dom binding
+        var $searchInput = $('#search-input');
+        var $resultContainer = $('#search-results-container');
+        var $searchStatsContainer = $('#search-stats-container');
+
+        var prevQuery = $searchInput.val() || '';
+
+        // Search in Action
+        $searchInput.on('keyup change', function(event) {
+          event.preventDefault();
+          var $input = $(this);
+          if ($input.val() && $input.val() !== prevQuery) {
+            prevQuery = $input.val();
+
+            // Refresh AdSense results
+            pageOptions.query = prevQuery;
+            prevQuery && _googCsa('ads', pageOptions, adblock);
+
+            // Refresh Methi results
+            searchArticles(prevQuery);
+
+            blockAdblockUser();
+          }
+
+          // Default the page when input is empty
+          if(!$input.val()){
+            $searchStatsContainer.html('');
+            $resultContainer.html('<p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>');
+          }
+        });
+
+        function searchArticles(query) {
+          appbase.streamSearch({
+            type: 'article',
+            body: {
+              "from": 0,
+              "size": 5,
+              "fields": ["link"],
+              "query": {
+                "multi_match": {
+                  "query": query,
+                  "fields": [
+                    "title_simple^2", "title_ngrams"
+                  ],
+                  "operator": "and"
+                }
+              },
+              "highlight": {
+                "fields": {
+                  "title": {
+                    "fragment_size": 100,
+                    "no_match_size": 100
+                  }
+                }
+              }
+            }
+          }).on('data', function(response) {
+            displayResults(response);
+            displaySearchStats(response);
+          }).on('error', function(error) {
+          })
+        }
+        
+        function displayResults(content) {
+          var html = ''
+          if (content.hits.total > 0) {
+            jQuery.map(content.hits.hits, function(hit) {
+              html += '<p><a href="http://' + hit.fields.link.toString().slice(0, -10) +'" target="_blank">' + hit.highlight.title + '</p>'
+            });
+          }
+          else {
+            html = 'No results found';
+          }
+          $resultContainer.html(html);
+        }
+
+        function displaySearchStats(content) {
+          var html = content.hits.total + ' articles <small>founds in <strong>' + content.took / 1000 + ' seconds</strong>';
+          $searchStatsContainer.html(html);
+        }
+      });
+  </script>
+</body>
+</html>

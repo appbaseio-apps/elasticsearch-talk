@@ -1,0 +1,73 @@
+<html>
+<head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
+  <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container-fluid">
+      <h2> Bulk Insertion of Tweets</h2><br>
+      <div class="row">
+        <div class="col-md-12" id="info-text">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript">
+
+      $(document).ready(function(){ 
+        var $infoTextContainer = $('#info-text')
+        var $jsonObject
+
+        $.ajax({
+            type: 'GET',
+            url: 'data.json',
+            dataType: 'json',
+            async: false
+        }).done(function(data){
+          console.log(data)
+          jsonObject = data
+        })
+
+        var client = new $.es.Client({
+          hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
+        })
+
+        // Find number of document of "finaljson"
+        var xloop = jsonObject.length;
+
+        // Declare variable to contain body of JSON data for loading to ElasticSearch
+        var br = [];
+
+        // Function to create body for loading to ElasticSearch
+        function create_bulk (bulk_request) {
+          var obj
+
+          for (i = 0; i < xloop; i++) {
+            obj = jsonObject[i]
+            // Insert header of record
+            bulk_request.push({index: {_index: config.app_name, _type: 'tweets', _id: i+1}});
+            bulk_request.push(obj);    
+          }
+          return bulk_request;
+        };
+          
+        // Call function to get body for loading
+        create_bulk(br); 
+
+        // Standard function of ElasticSearch to use bulk command
+        client.bulk(
+        {
+          body : br,
+          index: config.app_name,
+          type: "tweets"
+        }, function (err, resp) {
+          console.log(resp);
+        });
+      });
+  </script>
+</body>
+</html>
