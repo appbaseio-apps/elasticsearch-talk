@@ -52,8 +52,8 @@
             body: {
               query: {
                   fuzzy: {
-                    //'name' : searchText
-                    'tweet' : searchText
+                    'name' : searchText
+                    //'tweet' : searchText
                   }
                 }
               }
@@ -68,41 +68,6 @@
         var $searchInput = $('#search-input');
         var $resultContainer = $('#search-results-container');
         var $searchStatsContainer = $('#search-stats-container');
-
-        var prevQuery = $searchInput.val() || '';
-
-
-        function searchArticles(query) {
-          appbase.streamSearch({
-            type: 'article',
-            body: {
-              "from": 0,
-              "size": 5,
-              "fields": ["link"],
-              "query": {
-                "multi_match": {
-                  "query": query,
-                  "fields": [
-                    "title_simple^2", "title_ngrams"
-                  ],
-                  "operator": "and"
-                }
-              },
-              "highlight": {
-                "fields": {
-                  "title": {
-                    "fragment_size": 100,
-                    "no_match_size": 100
-                  }
-                }
-              }
-            }
-          }).on('data', function(response) {
-            displayResults(response);
-            displaySearchStats(response);
-          }).on('error', function(error) {
-          })
-        }
         
         function displayResults(content) {
           var html = ''
