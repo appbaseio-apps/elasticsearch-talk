@@ -61,16 +61,6 @@
                 }
             };
 
-            // client.search({
-            //   index: config.app_name,
-            //   type: 'tweets',
-            //   body: bodyQuery
-            //   }, function (error, response) {
-            //     console.log(response);
-            //     displayResults(response);
-            //     displaySearchStats(response);
-            // });
-
             client.suggest({
                 index: config.app_name,
                 type: 'tweets',

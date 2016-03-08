@@ -55,14 +55,14 @@
         //     var bodyQuery = {
         //         query: {
         //             match: {
-        //                 //'name' : searchText
-        //                 'tweet': searchText
+        //                 //'analyzed_name' : searchText
+        //                 'analyzed_tweet': searchText
         //             }
 
         //             //Match phrase 
         //             // match_phrase: {
-        //             //   'name' : searchText
-        //             //   //'tweet' : searchText
+        //             //   'analyzed_name' : searchText
+        //             //   //'analyzed_tweet' : searchText
         //             // }
         //         }
         //     };
@@ -85,7 +85,7 @@
              query: {
                multi_match: {
                  query: searchText,
-                 fields: ['tweet', 'name']
+                 fields: ['analyzed_tweet', 'analyzed_name']
                }
              }
            };
