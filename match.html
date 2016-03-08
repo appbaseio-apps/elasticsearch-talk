@@ -9,13 +9,15 @@
 <body>
   <div class="wrapper">
     <div class="container-fluid">
-      <h2> Match all query </h2><br>
+      <h2> Match/Match phrase query </h2><br>
+      <p>You can apply match query on any field (by default on name, you can apply on tweet also)</p><br>
       <div class="row">
         <div class="col-md-12">
           <form>
             <div class="form-group">
-              <input type="text" class="form-control" id="search-input" placeholder="Search tweets...">
+              <input type="text" class="form-control" id="search-input" placeholder="Search name...">
             </div>
+            <a href="javascript:void(0);" class="btn btn-success" id="submit">Submit</a>
           </form>
         </div>
       </div>
@@ -24,7 +26,7 @@
           <div id="search-stats-container">
             <!-- Search Stats injected here -->
           </div>
-          <div id="search-results-container">
+          <div id="search-results-container" class="col-xs-12">
             <!-- Search Results injected here -->
             <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
           </div>
@@ -40,21 +42,33 @@
           hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
 
-        client.search({
-          index: config.app_name,
-          type: 'tweets',
-          body: {
-            query: {
-                match_phrase: {
-                  name: 'Yash Shah'
+       //On submit
+       $('#submit').on('click', function(){
+          var searchText = $('#search-input').val();
+
+          client.search({
+            index: config.app_name,
+            type: 'tweets',
+            body: {
+              query: {
+                  match: {
+                    'name' : searchText
+                    //'tweet' : searchText
+                  }
+
+                  //Match phrase 
+                  // match_phrase: {
+                  //   'name' : searchText
+                  //   //'tweet' : searchText
+                  // }
                 }
               }
-            }
-          }, function (error, response) {
-            console.log(response);
-            displayResults(response);
-            displaySearchStats(response);
-        });
+            }, function (error, response) {
+              console.log(response);
+              displayResults(response);
+              displaySearchStats(response);
+          });
+       });
 
         // Dom binding
         var $searchInput = $('#search-input');
@@ -63,24 +77,6 @@
 
         var prevQuery = $searchInput.val() || '';
 
-        // Search in Action
-        $searchInput.on('keyup change', function(event) {
-          event.preventDefault();
-          var $input = $(this);
-          if ($input.val() && $input.val() !== prevQuery) {
-            prevQuery = $input.val();
-
-              // Refresh Methi results
-            searchArticles(prevQuery);
-
-          }
-
-          // Default the page when input is empty
-          if(!$input.val()){
-            $searchStatsContainer.html('');
-            $resultContainer.html('<p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>');
-          }
-        });
 
         function searchArticles(query) {
           appbase.streamSearch({
@@ -118,7 +114,9 @@
           var html = ''
           if (content.hits.total > 0) {
             jQuery.map(content.hits.hits, function(hit) {
-              html += '<p>' + hit._source.name + '</p>'
+              html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>'+
+                      '<span class="pull-right">'+ hit._source.age + '</span>'+
+                      '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
             });
           }
           else {

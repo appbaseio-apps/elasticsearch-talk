@@ -24,7 +24,7 @@
           <div id="search-stats-container">
             <!-- Search Stats injected here -->
           </div>
-          <div id="search-results-container">
+          <div id="search-results-container" class="col-xs-12">
             <!-- Search Results injected here -->
             <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
           </div>
@@ -45,9 +45,7 @@
           type: 'tweets',
           body: {
             query: {
-                match_phrase: {
-                  name: 'Yash Shah'
-                }
+                match_all: {}
               }
             }
           }, function (error, response) {
@@ -118,7 +116,9 @@
           var html = ''
           if (content.hits.total > 0) {
             jQuery.map(content.hits.hits, function(hit) {
-              html += '<p>' + hit._source.name + '</p>'
+              html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>'+
+                      '<span class="pull-right">'+ hit._source.age + '</span>'+
+                      '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
             });
           }
           else {

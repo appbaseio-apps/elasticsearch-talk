@@ -14,3 +14,13 @@
     background: #FFFAC0;
     font-style: normal;
 }
+
+.box {
+	margin-bottom: 15px;
+}
+.pl-0 {
+	padding-left: 0;
+}
+.pr-0 {
+	padding-right: 0;
+}
