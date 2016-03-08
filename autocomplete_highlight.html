@@ -9,7 +9,7 @@
 <body>
   <div class="wrapper">
     <div class="container-fluid">
-      <h2>Did you mean?</h2><br>
+      <h2> Autocomplete with Highlight</h2><br>
       <div class="row">
         <div class="col-md-12">
           <form>
@@ -26,7 +26,7 @@
           </div>
           <div id="search-results-container" class="col-xs-12">
             <!-- Search Results injected here -->
-            <p class="bg-warning">Hint: Search for terms like  <strong>aila</strong>, <strong>chopda</strong>, <strong>dipika</strong></p>
+            <p class="bg-warning">Hint: Search for terms like  <strong>Ola Cabs</strong>, <strong>Hiring</strong>, <strong>Handicrafts</strong></p>
           </div>
         </div>
       </div>
@@ -47,46 +47,49 @@
 
 
        //On submit
-       // 1. Match
+
+       // 1. Multi Match
        $searchInput.on('keyup change', function(event) {
           var searchText = $('#search-input').val();
           var bodyQuery = {
-              mysuggester: {
-                text: searchText,
-                term: {
-                  field: 'name'
+            query: {
+              multi_match: {
+                query: searchText,
+                fields: ['tweet', 'name']
+              }
+            },
+            "highlight": {
+              "fields": {
+                "name": {
+                  "fragment_size": 100,
+                  "no_match_size": 100
+                },
+                "tweet": {
+                  "fragment_size": 100,
+                  "no_match_size": 100
                 }
               }
-            };
+            }
+          };
 
-          // client.search({
-          //   index: config.app_name,
-          //   type: 'tweets',
-          //   body: bodyQuery
-          //   }, function (error, response) {
-          //     console.log(response);
-          //     displayResults(response);
-          //     displaySearchStats(response);
-          // });
-
-          client.suggest({
+          client.search({
             index: config.app_name,
             type: 'tweets',
             body: bodyQuery
             }, function (error, response) {
-              displayResults(response.mysuggester);
-            });
+              console.log(response);
+              displayResults(response);
+              displaySearchStats(response);
+          });
        });
-
-      
 
         function displayResults(content) {
           var html = ''
-          if (content[0].options.length > 0) {
-            html += '<h3>Did you mean?</h3>';
-            jQuery.map(content[0].options, function(hit) {
-              html += '<div class="row box"><span class="col-xs-12 pull-left"><em>' + hit.text + '</em></span>'+
-                      '</div>';
+          if (content.hits.total > 0) {
+            jQuery.map(content.hits.hits, function(hit) {
+              html += '<div class="row box"><strong class="pull-left">' + hit.highlight.name + '</strong>'+
+                      '<span class="pull-right">'+ hit._source.age + '</span>'+
+                      '<div class="col-xs-12">' + hit.highlight.tweet + '</div></div>';
             });
           }
           else {
