@@ -39,15 +39,16 @@
         var client = new $.es.Client({
           hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
         })
+        var bodyQuery = {
+          query: {
+            match_all: {}
+          }
+        };
 
         client.search({
           index: config.app_name,
           type: 'tweets',
-          body: {
-            query: {
-                match_all: {}
-              }
-            }
+          body: bodyQuery
           }, function (error, response) {
             console.log(response);
             displayResults(response);

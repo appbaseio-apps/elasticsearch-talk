@@ -45,18 +45,19 @@
        //On submit
        $('#submit').on('click', function(){
           var searchText = $('#search-input').val();
+          var bodyQuery = {
+            query: {
+              fuzzy: {
+                'name' : searchText
+                //'tweet' : searchText
+              }
+            }
+          };
 
           client.search({
             index: config.app_name,
             type: 'tweets',
-            body: {
-              query: {
-                  fuzzy: {
-                    'name' : searchText
-                    //'tweet' : searchText
-                  }
-                }
-              }
+            body: bodyQuery
             }, function (error, response) {
               console.log(response);
               displayResults(response);

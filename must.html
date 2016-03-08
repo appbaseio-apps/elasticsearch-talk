@@ -58,21 +58,22 @@
             };
             searchMap.push(obj);
           });
+          var bodyQuery = {
+            query: {
+              "bool": {
+                "minimum_should_match": 1,
+                // Must query
+                "must" :searchMap
+                // Must not query
+                // "must_not" :searchMap
+              }
+            }
+          };
 
           client.search({
             index: config.app_name,
             type: 'tweets',
-            body: {
-              query: {
-                  "bool": {
-                    "minimum_should_match": 1,
-                    // Must query
-                    "must" :searchMap
-                    // Must not query
-                    // "must_not" :searchMap
-                  }
-                }
-              }
+            body: bodyQuery
             }, function (error, response) {
               console.log(response);
               displayResults(response);
