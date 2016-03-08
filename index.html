@@ -1,10 +1,10 @@
 <html>
 <head>
   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="css/style.css">
   <script src="//cdn.jsdelivr.net/jquery/2.1.4/jquery.min.js"></script>
   <script src="bower_components/elasticsearch/elasticsearch.jquery.js"></script>
-  <script src="config.js"></script>
+  <script src="js/config.js"></script>
 </head>
 <body>
   <div class="wrapper">
@@ -35,17 +35,6 @@
   <script type="text/javascript">
       
       $(document).ready(function(){ 
-        var $jsonObject
-
-        $.ajax({
-            type: 'GET',
-            url: 'data.json',
-            dataType: 'json',
-            async: false
-        }).done(function(data){
-          console.log(data)
-          jsonObject = data
-        })
 
         var client = new $.es.Client({
           hosts: 'https://' + config.username + ':' + config.password + '@scalr.api.appbase.io'
