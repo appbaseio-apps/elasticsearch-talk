@@ -67,16 +67,7 @@
         //         }
         //     };
 
-        //     client.search({
-        //         index: config.app_name,
-        //         type: 'tweets',
-        //         body: bodyQuery
-        //     }, function(error, response) {
-        //         console.log(response);
-        //         displayResults(response);
-        //         displaySearchStats(response);
-        //     });
-        // });
+    
 
         // 2. Multi Match
         $searchInput.on('keyup change', function(event) {
@@ -92,7 +83,7 @@
 
            client.search({
              index: config.app_name,
-             type: 'tweets',
+             type: 'analyzed_tweets',
              body: bodyQuery
              }, function (error, response) {
                console.log(response);
@@ -105,9 +96,9 @@
             var html = ''
             if (content.hits.total > 0) {
                 jQuery.map(content.hits.hits, function(hit) {
-                    html += '<div class="row box"><strong class="pull-left">' + hit._source.name + '</strong>' +
+                    html += '<div class="row box"><strong class="pull-left">' + hit._source.analyzed_name + '</strong>' +
                         '<span class="pull-right">' + hit._source.age + '</span>' +
-                        '<div class="col-xs-12">' + hit._source.tweet + '</div></div>';
+                        '<div class="col-xs-12">' + hit._source.analyzed_tweet + '</div></div>';
                 });
             } else {
                 html = 'No results found';

@@ -57,16 +57,16 @@
                 query: {
                     multi_match: {
                         query: searchText,
-                        fields: ['tweet', 'name']
+                        fields: ['analyzed_tweet', 'analyzed_name']
                     }
                 },
                 "highlight": {
                     "fields": {
-                        "name": {
+                        "analyzed_name": {
                             "fragment_size": 100,
                             "no_match_size": 100
                         },
-                        "tweet": {
+                        "analyzed_tweet": {
                             "fragment_size": 100,
                             "no_match_size": 100
                         }
@@ -76,7 +76,7 @@
 
             client.search({
                 index: config.app_name,
-                type: 'tweets',
+                type: 'analyzed_tweets',
                 body: bodyQuery
             }, function(error, response) {
                 console.log(response);
@@ -89,9 +89,9 @@
             var html = ''
             if (content.hits.total > 0) {
                 jQuery.map(content.hits.hits, function(hit) {
-                    html += '<div class="row box"><strong class="pull-left">' + hit.highlight.name + '</strong>' +
+                    html += '<div class="row box"><strong class="pull-left">' + hit.highlight.analyzed_name + '</strong>' +
                         '<span class="pull-right">' + hit._source.age + '</span>' +
-                        '<div class="col-xs-12">' + hit.highlight.tweet + '</div></div>';
+                        '<div class="col-xs-12">' + hit.highlight.analyzed_tweet + '</div></div>';
                 });
             } else {
                 html = 'No results found';
